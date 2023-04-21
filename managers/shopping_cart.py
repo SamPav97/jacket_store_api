@@ -4,6 +4,8 @@ from db import db
 from models import ShoppingCartModel, JacketModel, TransactionModel
 from services.wise import WiseService
 from utils.encryptor import CryptoHelper
+from flask import abort
+
 
 
 class ShoppingCartManager:
@@ -43,18 +45,24 @@ class ShoppingCartManager:
     def purchase(user):
         shopping_cart = ShoppingCartManager.get_shopping_cart(user)
         if shopping_cart.jackets:
-
-            transaction_data = ShoppingCartManager.issue_transaction(user, shopping_cart.amount, f"{user.first_name} {user.last_name}",
+            try:
+                # for each jacket in cart I have to create a separate transaction with details of each jacket creator.
+                # currently I just make sure WISE works by sending the transaction to the user's details.
+                transaction_data = ShoppingCartManager.issue_transaction(user, shopping_cart.amount, f"{user.first_name} {user.last_name}",
                                                                   user.iban, shopping_cart.id)
-            transaction = TransactionModel(**transaction_data)
-            for jacket in shopping_cart.jackets:
-                db.session.delete(jacket)
-            shopping_cart.jackets = []
-            shopping_cart.amount = 0
-            # db.session.flush()
-            db.session.add(transaction)
-            db.session.flush()
-            return True
+                transaction = TransactionModel(**transaction_data)
+
+                for jacket in shopping_cart.jackets:
+                    db.session.delete(jacket)
+                shopping_cart.jackets = []
+                shopping_cart.amount = 0
+                # db.session.flush()
+                db.session.add(transaction)
+                db.session.flush()
+                return True
+            except Exception:
+                # raise a 400 error with the exception message
+                abort(400, "Your WISE key or IBAN are wrong")
         return False
 
     @staticmethod
