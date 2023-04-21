@@ -70,8 +70,10 @@ paths:
           description: Updated Jacket
           schema:
             $ref: '#/definitions/jacket'
+        '401':
+          description: You do not own this jacket
         '404':
-          description: Jacket not found or not owned by the user
+          description: Jacket not found
       operationId: update_jacket
       parameters:
         - name: payload
@@ -91,6 +93,15 @@ paths:
       tags:
         - jacket
   /shopping_cart:
+    post:
+      responses:
+        '200':
+          description: Purchase successful
+        '400':
+          description: Purchase failed
+      operationId: purchase
+      tags:
+        - shopping_cart
     put:
       responses:
         '200':
@@ -134,15 +145,6 @@ paths:
           in: body
           schema:
             $ref: '#/definitions/jacket_id'
-      tags:
-        - shopping_cart
-    post:
-      responses:
-        '200':
-          description: Purchase successful
-        '400':
-          description: Purchase failed
-      operationId: purchase
       tags:
         - shopping_cart
 info:

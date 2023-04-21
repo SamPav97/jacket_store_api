@@ -1,6 +1,8 @@
 import os
 import uuid
 
+from werkzeug.exceptions import Unauthorized
+
 from common.constants import TEMP_DIR
 from db import db
 from models import JacketModel
@@ -67,7 +69,7 @@ class JacketManager:
             return None
 
         if jacket.creator_id != user:
-            return None  # User is not the owner
+            raise Unauthorized("You do not own this jacket")
 
         extension = data.pop("extension")
         photo = data.pop("photo")

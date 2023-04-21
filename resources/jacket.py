@@ -56,7 +56,8 @@ class JacketEditResource(Resource):
     #         return {'message': 'Jacket not found or not owned by the user'}, status.HTTP_404_NOT_FOUND
 
     @jacket_ns.doc('update_jacket', responses={200: ('Updated Jacket', jacket_model),
-                                               404: 'Jacket not found or not owned by the user'})
+                                               404: 'Jacket not found',
+                                               401: 'You do not own this jacket'})
     @jacket_ns.expect(jacket_model, validate=False)
     @auth.login_required
     @validate_schema(JacketSchemaRequest)
@@ -66,7 +67,7 @@ class JacketEditResource(Resource):
 
         edited_jacket = JacketManager.edit(jacket_id, data, user.id)
         if edited_jacket is None:
-            return {'message': 'Jacket not found or not owned by the user'}, status.HTTP_404_NOT_FOUND
+            return {'message': 'Jacket not found'}, status.HTTP_404_NOT_FOUND
 
         return JacketSchemaResponse().dump(edited_jacket), status.HTTP_200_OK
 

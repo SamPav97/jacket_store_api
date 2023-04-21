@@ -95,7 +95,7 @@ class TestApp(TestCase):
             if method == "PUT":
                 resp = self.client.put(url, headers=headers, json=data)
             self.assert404(resp)
-            self.assertEqual(resp.json, {'message': 'Jacket not found or not owned by the user'})
+            self.assertEqual(resp.json, {'message': 'Jacket not found'})
 
     @patch.object(S3Service, "upload_photo", return_value="some.s3.url")
     def test_get_all_happy_case(self, mock_upload_photo):
