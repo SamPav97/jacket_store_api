@@ -1,0 +1,248 @@
+swagger: '2.0'
+basePath: /
+paths:
+  /auth/login:
+    post:
+      responses:
+        '200':
+          description: Token is returned
+      operationId: post_login_resource
+      parameters:
+        - name: payload
+          required: true
+          in: body
+          schema:
+            $ref: '#/definitions/login'
+      tags:
+        - auth
+  /auth/register:
+    post:
+      responses:
+        '201':
+          description: Token is returned
+      operationId: post_register_resource
+      parameters:
+        - name: payload
+          required: true
+          in: body
+          schema:
+            $ref: '#/definitions/user'
+      tags:
+        - auth
+  /jacket:
+    post:
+      responses:
+        '201':
+          description: Jacket created
+      operationId: post_jackets_resource
+      parameters:
+        - name: payload
+          required: true
+          in: body
+          schema:
+            $ref: '#/definitions/jacket'
+      tags:
+        - jacket
+    get:
+      responses:
+        '200':
+          description: Jackets
+          schema:
+            $ref: '#/definitions/jacket'
+      operationId: get_jackets
+      parameters:
+        - name: brand
+          in: query
+          type: string
+          description: Filter jackets by brand
+      tags:
+        - jacket
+  /jacket/{jacket_id}:
+    parameters:
+      - in: path
+        description: The jacket identifier
+        name: jacket_id
+        required: true
+        type: integer
+    put:
+      responses:
+        '200':
+          description: Updated Jacket
+          schema:
+            $ref: '#/definitions/jacket'
+        '404':
+          description: Jacket not found or not owned by the user
+      operationId: update_jacket
+      parameters:
+        - name: payload
+          required: true
+          in: body
+          schema:
+            $ref: '#/definitions/jacket'
+      tags:
+        - jacket
+    delete:
+      responses:
+        '200':
+          description: Jacket successfully deleted
+        '404':
+          description: Jacket not found or not owned by the user
+      operationId: delete_jacket
+      tags:
+        - jacket
+  /shopping_cart:
+    put:
+      responses:
+        '200':
+          description: Jacket added
+          schema:
+            $ref: '#/definitions/shopping_cart'
+        '404':
+          description: Jacket not found or already in the cart
+      operationId: add_jacket_to_cart
+      parameters:
+        - name: payload
+          required: true
+          in: body
+          schema:
+            $ref: '#/definitions/jacket_id'
+      tags:
+        - shopping_cart
+    get:
+      responses:
+        '200':
+          description: Shopping Cart
+          schema:
+            $ref: '#/definitions/shopping_cart'
+        '204':
+          description: Your shopping cart is empty
+      operationId: get_shopping_cart
+      tags:
+        - shopping_cart
+    delete:
+      responses:
+        '200':
+          description: Jacket removed
+          schema:
+            $ref: '#/definitions/shopping_cart'
+        '404':
+          description: Jacket not found in the cart
+      operationId: remove_jacket_from_cart
+      parameters:
+        - name: payload
+          required: true
+          in: body
+          schema:
+            $ref: '#/definitions/jacket_id'
+      tags:
+        - shopping_cart
+    post:
+      responses:
+        '200':
+          description: Purchase successful
+        '400':
+          description: Purchase failed
+      operationId: purchase
+      tags:
+        - shopping_cart
+info:
+  title: API
+  version: '1.0'
+produces:
+  - application/json
+consumes:
+  - application/json
+tags:
+  - name: auth
+    description: Authentication related operations
+  - name: jacket
+    description: Jacket related operations
+  - name: shopping_cart
+    description: Shopping cart related operations
+definitions:
+  user:
+    properties:
+      first_name:
+        type: string
+        default: Ivan
+      last_name:
+        type: string
+        default: Ivanov
+      email:
+        type: string
+        default: Email for user
+      phone:
+        type: string
+        default: Phone number for user
+      password:
+        type: string
+        default: Password for user
+      role:
+        type: string
+        default: User is either guest or creator
+      iban:
+        type: string
+        default: Iban of user
+      wise_key:
+        type: string
+        default: Wise key of user
+    type: object
+  login:
+    properties:
+      email:
+        type: string
+        default: Email of user
+      password:
+        type: string
+        default: Password for user
+    type: object
+  jacket:
+    properties:
+      photo:
+        type: string
+        default: Base64 codified image.
+      extension:
+        type: string
+        default: File extension of image
+      brand:
+        type: string
+        default: Sample brand
+      description:
+        type: string
+        default: Description of jacket
+      size:
+        type: string
+        default: xs,s,m,l
+      price:
+        type: integer
+    type: object
+  jacket_id:
+    required:
+      - jacket_id
+    properties:
+      jacket_id:
+        type: integer
+        description: The jacket identifier
+    type: object
+  shopping_cart:
+    properties:
+      amount:
+        type: number
+        description: Total amount of the shopping cart
+      id:
+        type: integer
+        description: Shopping cart identifier
+      jackets:
+        type: array
+        description: List of jackets in the shopping cart
+        items:
+          $ref: '#/definitions/jacket'
+      user_id:
+        type: integer
+        description: User identifier
+    type: object
+responses:
+  ParseError:
+    description: When a mask can't be parsed
+  MaskError:
+    description: When any error occurs on mask
