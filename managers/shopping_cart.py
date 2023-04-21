@@ -1,11 +1,12 @@
 import uuid
 
+from flask import abort
+from sqlalchemy.orm import joinedload
+
 from db import db
 from models import ShoppingCartModel, JacketModel, TransactionModel
 from services.wise import WiseService
 from utils.encryptor import CryptoHelper
-from flask import abort
-
 
 
 class ShoppingCartManager:
@@ -46,18 +47,28 @@ class ShoppingCartManager:
         shopping_cart = ShoppingCartManager.get_shopping_cart(user)
         if shopping_cart.jackets:
             try:
-                # for each jacket in cart I have to create a separate transaction with details of each jacket creator.
-                # currently I just make sure WISE works by sending the transaction to the user's details.
-                transaction_data = ShoppingCartManager.issue_transaction(user, shopping_cart.amount, f"{user.first_name} {user.last_name}",
-                                                                  user.iban, shopping_cart.id)
-                transaction = TransactionModel(**transaction_data)
+                # Get jackets' IDs
+                jacket_ids = [jacket.id for jacket in shopping_cart.jackets]
 
-                for jacket in shopping_cart.jackets:
+                # Query jackets with their creators' data
+                jackets = JacketModel.query.options(joinedload(JacketModel.creator)).filter(JacketModel.id.in_(jacket_ids)).all()
+
+                for jacket in jackets:
+                    creator = jacket.creator
+                    transaction_data = ShoppingCartManager.issue_transaction(
+                        user,
+                        jacket.price,
+                        f"{creator.first_name} {creator.last_name}",
+                        creator.iban,
+                        shopping_cart.id
+                    )
+                    transaction = TransactionModel(**transaction_data)
+
                     db.session.delete(jacket)
+                    db.session.add(transaction)
+
                 shopping_cart.jackets = []
                 shopping_cart.amount = 0
-                # db.session.flush()
-                db.session.add(transaction)
                 db.session.flush()
                 return True
             except Exception:
