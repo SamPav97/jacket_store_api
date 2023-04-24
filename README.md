@@ -3,7 +3,7 @@ API README
 This RESTful API aims to be the backend for an online jacket shop, it is documented in Swagger 2.0 and has the following endpoints:
 authentication, jacket management, shopping cart management. 
 
-Install requirements and run app.py.
+Install requirements and run app.py OR Docker image: docker pull sampav97/jacket_api_image
 
 Third party integration: 
 - The API is integrated with the payment provider WISE. Users are requested to provide their WISE keys upon registration to be able to use the API.
